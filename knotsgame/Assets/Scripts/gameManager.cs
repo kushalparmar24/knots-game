@@ -25,12 +25,49 @@ public class gameManager : MonoBehaviour
 
     Vector3Int currentPos;
     Vector3Int prevPos;
+    int[,] level;
+    Dictionary<int, List<Vector3Int>> levelNods;
 
     private void Awake()
     {
         instance = this;
+        FileManager fileManager = new FileManager();
+        // level = new int[5,5];
 
-        currentNode.brickTile = brickTile;
+        level = fileManager.ReadLevel();
+        levelNods = new Dictionary<int, List<Vector3Int>>();
+        for (int j = 0; j < level.GetLength(1); j++)
+        {
+            for (int i = 0; i < level.GetLength(0); i++)
+            {
+                Vector3Int cell = new Vector3Int(j, level.GetLength(0) -i, 0);
+                bgtilemap.SetTile(cell, bgtile);
+                if (level[i, j] < 100)
+                    continue;
+                if (!levelNods.ContainsKey(level[i, j]))
+                {
+                    List<Vector3Int> temp = new List<Vector3Int>();
+                    //temp.Add(new Vector3Int(i, j, 0));
+                    levelNods.Add(level[i, j], temp);
+                    Vector3Int cell1 = new Vector3Int(j, level.GetLength(0) - i, 0);
+                    bgtilemap.SetTile(cell1, getNodetile(level[i, j]));
+                }
+                else
+                {
+                    //levelNods.TryGetValue(level[i, j], out List<Vector3Int> temp);
+                    //temp.Add(new Vector3Int(i, j, 0));
+                    Vector3Int cell2 = new Vector3Int(j, level.GetLength(0) - i, 0);
+                    bgtilemap.SetTile(cell2, getNodetile(level[i, j]));
+                }
+            }
+        }
+
+        
+
+
+
+
+            currentNode.brickTile = brickTile;
 
         for (int i = 0; i < colorNodeData.colorIDDatas.Count; i++)
         {
@@ -38,8 +75,13 @@ public class gameManager : MonoBehaviour
             cbaseKnots.setData(colorNodeData.colorIDDatas[i].id, colorNodeData.colorIDDatas[i].bricktile, colorNodeData.colorIDDatas[i].nodeTile);
             usedBaseKnots.Add(cbaseKnots);
         }
-        
+
         //testm();
+    }
+
+    Tile getNodetile(int id_)
+    {
+        return colorNodeData.colorIDDatas.FirstOrDefault(x => x.id == id_).nodeTile;
     }
 
     void testm()
