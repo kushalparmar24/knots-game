@@ -15,6 +15,7 @@ public class colorIDData
 {
     public int id;
     public Tile nodeTile;
+    public Tile bricktile;
     public colorType colorType;
 }
 

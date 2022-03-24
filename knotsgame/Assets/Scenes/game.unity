@@ -587,6 +587,8 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3502f12cc44ebb44590ba0f51247c803, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  strighttile: {fileID: 11400000, guid: 43e1df0261033534bb33a56dee99384a, type: 2}
+  ankletile: {fileID: 0}
   colorNodeData: {fileID: 11400000, guid: e9907905e9e6a50479de957917ce8297, type: 2}
   tilemap: {fileID: 1126615395}
   bgtilemap: {fileID: 1719443932}
@@ -596,6 +598,7 @@ MonoBehaviour:
   bluetile: {fileID: 11400000, guid: 39048cfa16e1857428cd762e92b3b02c, type: 2}
   redtile: {fileID: 11400000, guid: a90a49a8cd344cb40ae7d3badc952527, type: 2}
   end: 0
+  usedBaseKnots: []
   test: {fileID: 2793558107095422919, guid: 2646109cfe629dc4e9a775eac2d2a0db, type: 3}
 --- !u!4 &1246675357
 Transform:
