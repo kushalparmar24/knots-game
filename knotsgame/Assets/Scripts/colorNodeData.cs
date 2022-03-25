@@ -7,16 +7,34 @@ using UnityEngine.Tilemaps;
 [CreateAssetMenu(fileName = "colotData", menuName = "colordata")]
 public class colorNodeData : ScriptableObject
 {
-    public List<colorIDData> colorIDDatas;
+    [SerializeField] List<colorIDData> colorIDDatas;
+
+    public List<colorIDData> colorIDDatasList()
+    {
+        return colorIDDatas;
+    }
 }
 
 [Serializable]
 public class colorIDData
 {
-    public int id;
-    public Tile nodeTile;
-    public Tile bricktile;
-    public colorType colorType;
+    [SerializeField]  int id;
+    [SerializeField]  Tile nodeTile;
+    [SerializeField]  Tile bricktile;
+
+    public int getID()
+    {
+        return id;
+    }
+
+    public Tile getNodeTile()
+    {
+        return nodeTile;
+    }
+    public Tile getBrickTile()
+    {
+        return bricktile;
+    }
 }
 
 public enum colorType { red,blue,green };

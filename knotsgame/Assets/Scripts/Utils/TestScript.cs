@@ -6,10 +6,6 @@ public class TestScript : MonoBehaviour {
 	public int ysize,xsize;
 	public ArrayLayout data;
 
-    private void OnValidate()
-    {
-      //  data.changesize(size);
-    }
     [ContextMenu("writetojson")]
     public void writetojson()
     {

@@ -16,12 +16,15 @@ MonoBehaviour:
   - id: 100
     nodeTile: {fileID: 11400000, guid: a90a49a8cd344cb40ae7d3badc952527, type: 2}
     bricktile: {fileID: 11400000, guid: 84a7944038d942f4898a71c0869452b7, type: 2}
+    color: {r: 1, g: 0, b: 0, a: 1}
     colorType: 0
   - id: 101
     nodeTile: {fileID: 11400000, guid: 39048cfa16e1857428cd762e92b3b02c, type: 2}
     bricktile: {fileID: 11400000, guid: 0a38e045a71e44444936e8c551e4d14a, type: 2}
+    color: {r: 0, g: 0.15156412, b: 1, a: 1}
     colorType: 1
   - id: 102
     nodeTile: {fileID: 11400000, guid: 6978c91c99ead934ba60c2d924ac66e4, type: 2}
     bricktile: {fileID: 11400000, guid: 182cfc4fd494f2c40a359fa44a15e8eb, type: 2}
+    color: {r: 0, g: 1, b: 0.058154345, a: 1}
     colorType: 2
