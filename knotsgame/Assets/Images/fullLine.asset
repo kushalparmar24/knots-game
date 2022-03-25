@@ -10,10 +10,10 @@ MonoBehaviour:
   m_Enabled: 1
   m_EditorHideFlags: 0
   m_Script: {fileID: 13312, guid: 0000000000000000e000000000000000, type: 0}
-  m_Name: greenbrick
+  m_Name: fullLine
   m_EditorClassIdentifier: 
-  m_Sprite: {fileID: 21300000, guid: 66e9df87e286a2c468fb5610a3488d45, type: 3}
-  m_Color: {r: 0, g: 1, b: 0.15405083, a: 0.3137255}
+  m_Sprite: {fileID: 21300000, guid: 37e9ce50a1555dd4e95713dc1d45a9b3, type: 3}
+  m_Color: {r: 1, g: 1, b: 1, a: 1}
   m_Transform:
     e00: 1
     e01: 0

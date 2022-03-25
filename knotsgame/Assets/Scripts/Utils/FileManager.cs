@@ -9,11 +9,11 @@ using System.Text;
 
 public class FileManager
 {
-    private readonly string levelPath = $"{Application.streamingAssetsPath}/Levels/10_10.json";
+    private readonly string levelPath = $"{Application.streamingAssetsPath}/Levels/";
 
-    public int[,] ReadLevel()
+    public int[,] ReadLevel(int levelNum)
     {
-        var rows = File.ReadAllLines(levelPath); // TODO: Choose data path dynamic or preload them
+        var rows = File.ReadAllLines(levelPath+ levelNum+".json"); // TODO: Choose data path dynamic or preload them
         var columns = rows[0].Split(' ');
         int[,] level2D = new int[rows.Count(), columns.Count()];
 
@@ -46,7 +46,7 @@ public class FileManager
         }
 
         string result = sb.ToString();
-        File.WriteAllText(levelPath, result);
+        File.WriteAllText(levelPath + "11.json", result);
 
     }
 }

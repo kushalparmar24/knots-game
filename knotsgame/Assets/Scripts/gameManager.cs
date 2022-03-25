@@ -6,10 +6,10 @@ using System.Linq;
 
 public class gameManager : MonoBehaviour
 {
-    public Tile strighttile,ankletile;
+    public Tile strighttile,ankletile, fullTile;
     public colorNodeData colorNodeData;
     public static gameManager instance;
-    public Tilemap tilemap,bgtilemap,nodeGrid;
+    public Tilemap tilemap,bgtilemap,nodeGrid,lineTileMap;
     public Tile brickTile,bgtile, bluetile, redtile;
     public bool end = false;
     public List<baseKnots> usedBaseKnots = new List<baseKnots>();
@@ -27,20 +27,31 @@ public class gameManager : MonoBehaviour
     Vector3Int prevPos;
     int[,] level;
     Dictionary<int, List<Vector3Int>> levelNods;
+    FileManager fileManager = new FileManager();
+    int currentLevel;
 
     private void Awake()
     {
         instance = this;
-        FileManager fileManager = new FileManager();
+        currentLevel = 10;
+        setLevel();
+       
         // level = new int[5,5];
 
-        level = fileManager.ReadLevel();
+
+
+        //testm();
+    }
+
+    void setLevel()
+    {
+        level = fileManager.ReadLevel(currentLevel);
         levelNods = new Dictionary<int, List<Vector3Int>>();
         for (int j = 0; j < level.GetLength(1); j++)
         {
             for (int i = 0; i < level.GetLength(0); i++)
             {
-                Vector3Int cell = new Vector3Int(j, level.GetLength(0) -i, 0);
+                Vector3Int cell = new Vector3Int(j, level.GetLength(0) - i, 0);
                 bgtilemap.SetTile(cell, bgtile);
                 if (level[i, j] < 100)
                     continue;
@@ -50,24 +61,18 @@ public class gameManager : MonoBehaviour
                     //temp.Add(new Vector3Int(i, j, 0));
                     levelNods.Add(level[i, j], temp);
                     Vector3Int cell1 = new Vector3Int(j, level.GetLength(0) - i, 0);
-                    bgtilemap.SetTile(cell1, getNodetile(level[i, j]));
+                    nodeGrid.SetTile(cell1, getNodetile(level[i, j]));
                 }
                 else
                 {
                     //levelNods.TryGetValue(level[i, j], out List<Vector3Int> temp);
                     //temp.Add(new Vector3Int(i, j, 0));
                     Vector3Int cell2 = new Vector3Int(j, level.GetLength(0) - i, 0);
-                    bgtilemap.SetTile(cell2, getNodetile(level[i, j]));
+                    nodeGrid.SetTile(cell2, getNodetile(level[i, j]));
                 }
             }
         }
-
-        
-
-
-
-
-            currentNode.brickTile = brickTile;
+        currentNode.brickTile = brickTile;
 
         for (int i = 0; i < colorNodeData.colorIDDatas.Count; i++)
         {
@@ -75,8 +80,22 @@ public class gameManager : MonoBehaviour
             cbaseKnots.setData(colorNodeData.colorIDDatas[i].id, colorNodeData.colorIDDatas[i].bricktile, colorNodeData.colorIDDatas[i].nodeTile);
             usedBaseKnots.Add(cbaseKnots);
         }
-
-        //testm();
+    }
+    
+    void resetLevel()
+    {
+        for (int j = 0; j < level.GetLength(1); j++)
+        {
+            for (int i = 0; i < level.GetLength(0); i++)
+            {
+                Vector3Int cell = new Vector3Int(j, level.GetLength(0) - i, 0);
+                nodeGrid.SetTile(cell, null);
+                tilemap.SetTile(cell, null);
+                bgtilemap.SetTile(cell, null);
+            }
+        }
+        usedBaseKnots.Clear();
+        levelNods.Clear();
     }
 
     Tile getNodetile(int id_)
@@ -391,33 +410,81 @@ public class gameManager : MonoBehaviour
             }
         }
         Debug.Log("Level Completed");
+        resetLevel();
+        currentLevel++;
+        setLevel();
         return true;
     }
 
-    public int checkDirection(Vector3Int current_, Vector3Int prev_)
+    public lineData checkDirection(Vector3Int current_, Vector3Int prev_, int prevRot_)
     {
+        lineData lineData = new lineData(null, null, prevRot_, 0);
         int Rotation = 0;
         if (current_.x > prev_.x)
         {
             Rotation = 90;
+            lineData.currentRot = 90;
             //right
         }
-        else if(current_.x < prev_.x)
+        else if (current_.x < prev_.x)
         {
             Rotation = -90;
+            lineData.currentRot = -90;
             //left
         }
         else if (current_.y > prev_.y)
         {
             Rotation = 180;
+            lineData.currentRot = 180;
             //up
         }
         else if (current_.x < prev_.x)
         {
             Rotation = 0;
+            lineData.currentRot = 0;
+
             //down
         }
-        return Rotation;
-       // return UnityEngine.Matrix4x4;
+        lineData.currentTile = strighttile;
+        if (lineData.prevRot != -1000)
+            checkPrevDirection(lineData);
+        return lineData;
     }
+    public lineData checkPrevDirection(lineData lineData_)
+    {
+        int diff = lineData_.prevRot - lineData_.currentRot;
+        if (diff == 0)
+        {
+            lineData_.prevTile = fullTile;
+        }
+        else if (diff == 90)
+        {
+            lineData_.prevTile = ankletile;
+            if(lineData_.prevRot < Mathf.Abs(lineData_.currentRot))
+            lineData_.prevRot = 90;
+            else
+                lineData_.prevRot = -90;
+
+        }
+        else if (diff == -270)
+        {
+            lineData_.prevTile = ankletile;
+            lineData_.prevRot = 0;
+        }
+        else if (diff == 270)
+        {
+            lineData_.prevTile = ankletile;
+        }
+        else if (diff == -90)
+        {
+            lineData_.prevTile = ankletile;
+        }
+        else if (diff == 180)
+        {
+            lineData_.prevTile = fullTile;
+        }
+
+        return lineData_;
+    }
+
 }

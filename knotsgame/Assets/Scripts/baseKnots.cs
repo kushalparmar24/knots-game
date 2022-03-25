@@ -47,10 +47,84 @@ public class baseKnots
             placedList.Add(new nodeData(placedList.Count, cell_, id));
 
         gameManager.instance.tilemap.SetTile(cell_, brickTile);
-        //gameManager.instance.tilemap.SetTileFlags(cell_, TileFlags.None);
-        //gameManager.instance.tilemap.SetColor(cell_, brickTile.color);
-        //Matrix4x4 matrix = Matrix4x4.TRS(Vector3.zero, Quaternion.Euler(0f, 0f, gameManager.instance.checkDirection(cell_, placedList[placedList.Count - 2].position)), Vector3.one);
-        //gameManager.instance.tilemap.SetTransformMatrix(cell_, matrix);
+
+        addline();
+    }
+
+    void addline()
+    {
+        if (placedList.Count > 1)
+        {
+            Vector3Int currentCell = placedList[placedList.Count - 1].position;
+            Vector3Int prevCell = placedList[placedList.Count - 2].position;
+            lineData lineData = gameManager.instance.checkDirection(currentCell, prevCell, placedList[placedList.Count - 2].rotation);
+            gameManager.instance.lineTileMap.SetTile(currentCell, lineData.currentTile);
+            gameManager.instance.lineTileMap.SetTileFlags(currentCell, TileFlags.None);
+            gameManager.instance.lineTileMap.SetColor(currentCell, nodeTile.color);
+            Matrix4x4 matrix = Matrix4x4.TRS(Vector3.zero, Quaternion.Euler(0f, 0f, lineData.currentRot), Vector3.one);
+            gameManager.instance.lineTileMap.SetTransformMatrix(currentCell, matrix);
+            placedList[placedList.Count - 1].rotation = lineData.currentRot;
+
+            if (placedList[placedList.Count - 2].rotation != -1000)
+            {
+                gameManager.instance.lineTileMap.SetTile(prevCell, lineData.prevTile);
+                gameManager.instance.lineTileMap.SetTileFlags(prevCell, TileFlags.None);
+                gameManager.instance.lineTileMap.SetColor(prevCell, nodeTile.color);
+                Matrix4x4 matrix2 = Matrix4x4.TRS(Vector3.zero, Quaternion.Euler(0f, 0f, lineData.prevRot), Vector3.one);
+                gameManager.instance.lineTileMap.SetTransformMatrix(prevCell, matrix2);
+                //placedList[placedList.Count - 2].rotation = lineData.prevRot;
+            }
+        }
+        else
+        {
+            Vector3Int currentCell = placedList[placedList.Count - 1].position;
+            lineData lineData = gameManager.instance.checkDirection(currentCell, firstNodePos, -1000);
+            gameManager.instance.lineTileMap.SetTile(currentCell, lineData.currentTile);
+            gameManager.instance.lineTileMap.SetTileFlags(currentCell, TileFlags.None);
+            gameManager.instance.lineTileMap.SetColor(currentCell, nodeTile.color);
+            Matrix4x4 matrix = Matrix4x4.TRS(Vector3.zero, Quaternion.Euler(0f, 0f, lineData.currentRot), Vector3.one);
+            gameManager.instance.lineTileMap.SetTransformMatrix(currentCell, matrix);
+            placedList[placedList.Count - 1].rotation = lineData.currentRot;
+        }
+
+    }
+    void removeline()
+    {
+       
+        if (placedList.Count > 1)
+        {
+            Vector3Int currentCell = placedList[placedList.Count - 1].position;
+            Vector3Int prevCell = placedList[placedList.Count - 2].position;
+            lineData lineData = gameManager.instance.checkDirection(currentCell, prevCell, placedList[placedList.Count - 2].rotation);
+            gameManager.instance.lineTileMap.SetTile(currentCell, lineData.currentTile);
+            gameManager.instance.lineTileMap.SetTileFlags(currentCell, TileFlags.None);
+            gameManager.instance.lineTileMap.SetColor(currentCell, nodeTile.color);
+            Matrix4x4 matrix = Matrix4x4.TRS(Vector3.zero, Quaternion.Euler(0f, 0f, lineData.currentRot), Vector3.one);
+            gameManager.instance.lineTileMap.SetTransformMatrix(currentCell, matrix);
+           // placedList[placedList.Count - 1].rotation = lineData.currentRot;
+
+            //if (placedList[placedList.Count - 2].rotation != -1000)
+            //{
+            //    gameManager.instance.lineTileMap.SetTile(prevCell, lineData.prevTile);
+            //    gameManager.instance.lineTileMap.SetTileFlags(prevCell, TileFlags.None);
+            //    gameManager.instance.lineTileMap.SetColor(prevCell, nodeTile.color);
+            //    Matrix4x4 matrix2 = Matrix4x4.TRS(Vector3.zero, Quaternion.Euler(0f, 0f, lineData.prevRot), Vector3.one);
+            //    gameManager.instance.lineTileMap.SetTransformMatrix(prevCell, matrix2);
+            //    placedList[placedList.Count - 2].rotation = lineData.currentRot;
+            //}
+        }
+        else
+        {
+            Vector3Int currentCell = placedList[placedList.Count - 1].position;
+            lineData lineData = gameManager.instance.checkDirection(currentCell, firstNodePos, -1000);
+            gameManager.instance.lineTileMap.SetTile(currentCell, lineData.currentTile);
+            gameManager.instance.lineTileMap.SetTileFlags(currentCell, TileFlags.None);
+            gameManager.instance.lineTileMap.SetColor(currentCell, nodeTile.color);
+            Matrix4x4 matrix = Matrix4x4.TRS(Vector3.zero, Quaternion.Euler(0f, 0f, lineData.currentRot), Vector3.one);
+            gameManager.instance.lineTileMap.SetTransformMatrix(currentCell, matrix);
+            //placedList[placedList.Count - 1].rotation = lineData.currentRot;
+        }
+
     }
 
     public void removeOtherTiles(baseKnots baseKnots_,Vector3Int cell_)
@@ -75,12 +149,14 @@ public class baseKnots
                 Debug.Log("removeTile"+id);
                 
                 gameManager.instance.tilemap.SetTile(placedList[placedList.Count - 1].position, null);
+                gameManager.instance.lineTileMap.SetTile(placedList[placedList.Count - 1].position, null);
                 replaceRemovedTiles(placedList.Count - 1);
                 placedList.RemoveAt(placedList.Count - 1);
-                ;
             }
-           // gameManager.instance.end = false;
+            // gameManager.instance.end = false;
+            removeline();
         }
+        
     }
     public void removeAllTile(Vector3Int currentPos, bool forceRemove = false)
     {
@@ -94,8 +170,10 @@ public class baseKnots
         for(int i = 0; i<placedList.Count;i++)
         {
             gameManager.instance.tilemap.SetTile(placedList[i].position, null);
-           
+            gameManager.instance.lineTileMap.SetTile(placedList[i].position, null);
+
         }
+        
         placedList.Clear();
     }
     public void tempRemoveTile(Vector3Int cell_, out List<nodeData> nodeDatas_)
@@ -107,13 +185,17 @@ public class baseKnots
             while (placedList.Count > myKey.index)
             {
                 Debug.Log("tempRemoveTile");
-                if (myKey.index != placedList.Count-1)
+                if (myKey.index != placedList.Count - 1)
+                {
                     gameManager.instance.tilemap.SetTile(placedList[placedList.Count - 1].position, null);
+                    gameManager.instance.lineTileMap.SetTile(placedList[placedList.Count - 1].position, null);
+                }
                 if (nodeDatas_ == null)
                     nodeDatas_ = new List<nodeData>();
                 nodeDatas_.Add(placedList[placedList.Count - 1]);
                 placedList.RemoveAt(placedList.Count - 1);
             }
+            removeline();
         }
     }
 
@@ -190,6 +272,7 @@ public class nodeData
     public int index;
     public Vector3Int position;
     public int ID;
+    public int rotation;
    
 
     public nodeData(int index_, Vector3Int position_,int id_)
@@ -197,6 +280,7 @@ public class nodeData
         index = index_;
         position = position_;
         ID = id_;
+        rotation = -1000;
     }
 }
 
@@ -211,6 +295,21 @@ public class nextNodeData
         nodeTile = nodeTile_;
         brickTile = brickTile_;
         position = position_;
+    }
+}
+
+[Serializable]
+public class lineData
+{
+    public Tile prevTile, currentTile;
+    public int prevRot,currentRot;
+
+    public lineData(Tile prevTile_, Tile currentTile_, int prevRot_, int currentRot_)
+    {
+        prevTile = prevTile_;
+        currentTile = currentTile_;
+        prevRot = prevRot_;
+        currentRot = currentRot_;
     }
 }
 
