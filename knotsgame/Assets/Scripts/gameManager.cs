@@ -6,7 +6,7 @@ using System.Linq;
 
 public class gameManager : MonoBehaviour
 {
-    public Tile strighttile,ankletile, fullTile;
+    public Tile strighttile,ankletile, fullTile,nodeline;
     public colorNodeData colorNodeData;
     public static gameManager instance;
     public Tilemap tilemap,bgtilemap,nodeGrid,lineTileMap;
@@ -92,6 +92,7 @@ public class gameManager : MonoBehaviour
                 nodeGrid.SetTile(cell, null);
                 tilemap.SetTile(cell, null);
                 bgtilemap.SetTile(cell, null);
+                lineTileMap.SetTile(cell, null);
             }
         }
         usedBaseKnots.Clear();
@@ -169,6 +170,7 @@ public class gameManager : MonoBehaviour
                 usedBaseKnots[i].resetdict();
             }
             prevPos = new Vector3Int(-10000, -100000, -1);
+            //currentNode.clearTileOnCountOne();
         }
         
         if (pressing )//&& !end)
@@ -460,10 +462,16 @@ public class gameManager : MonoBehaviour
         else if (diff == 90)
         {
             lineData_.prevTile = ankletile;
-            if(lineData_.prevRot < Mathf.Abs(lineData_.currentRot))
-            lineData_.prevRot = 90;
-            else
+            //if(lineData_.prevRot < Mathf.Abs(lineData_.currentRot))
+            //lineData_.prevRot = 90;
+            //else
+            //    lineData_.prevRot = -90;
+            if (lineData_.prevRot == 0)
+                lineData_.prevRot = 90;
+            else if (lineData_.prevRot == 180)
                 lineData_.prevRot = -90;
+            else if (lineData_.prevRot == 90)
+                lineData_.prevRot = 180;
 
         }
         else if (diff == -270)
