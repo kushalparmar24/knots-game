@@ -9,30 +9,34 @@ public class levelManager : MonoBehaviour
     static levelManager instance;
     public enum GameState { PLAYING, LOADING, COMPLETED,PAUSED };
     public GameState gameState;
-    [SerializeField] public Tile halfLineTile, angleLineTile, fullLineTile, nodeLineTile;
     [SerializeField] public Tilemap brickTileMap, BGTileMap, nodeTileMap, lineTileMap;
     [SerializeField] colorNodeData colorNodeData;
-    [SerializeField] Tile  BGTile;
     [SerializeField] GameObject cursor;
     List<baseKnots> usedBaseKnots = new List<baseKnots>();
     baseKnots currentNode;
     bool pressing, canDraw;
-    int[,] level;
+    ArrayLayout levels;
     int xStart;
     int yStart;
+    int row;
+    int col;
     Dictionary<int, List<Vector3Int>> levelNods;
-    FileManager fileManager = new FileManager();
-   
     Vector3Int currentPos, prevPos, cell;
     Tile currentBrickTile, currentNodeTile, currentWallTile;
-
-
+    #region getters
     public List<baseKnots> getUsedBaseKnots()
     {
         return usedBaseKnots;
     }
-    public static levelManager Instance { get { return instance; } }
+    public colorNodeData GetColorNodeData()
+    {
+        return colorNodeData;
+    }
 
+    public static levelManager Instance { get { return instance; } }
+    #endregion
+
+    #region private methods
     private void Awake()
     {
         if (instance == null)
@@ -48,43 +52,51 @@ public class levelManager : MonoBehaviour
         currentNode = null;
         setLevel();
     }
+    /// <summary>
+    /// based on Current level, sets the level on the screen. takes the 2D array level data stored in the game manager
+    /// </summary>
     void setLevel()
     {
         gameState = GameState.LOADING;
         UIInGameManager.Instance.setLevelText();
-        level = gameManager.Instance.getlevelData()[gameManager.Instance.currentLevel];
+        levels = gameManager.Instance.getlevelDatas()[gameManager.Instance.currentLevel];
         levelNods = new Dictionary<int, List<Vector3Int>>();
-
-        xStart = level.GetLength(1)/2;
-        yStart = level.GetLength(0)/2;
-        for (int j = 0; j < level.GetLength(1); j++)
+        row = levels.rows[0].row.GetLength(0);
+        col = levels.rows.GetLength(0);
+        xStart = (row / 2)+1;
+        yStart = (col / 2)+1;
+        //these Loops Does multiple things. its places all the base tiles based of size of array. Also checks the id present on the array and places the node tiles.
+        //based on the count of unique ID present on the array, creates same count of baseknots.
+        for (int j = 0; j < row; j++)
         {
-            for (int i = 0; i < level.GetLength(0); i++)
+            for (int i = 0; i < col; i++)
             {
-                Vector3Int cell = new Vector3Int(j-xStart, (level.GetLength(0) - i)-yStart, 0);
-                BGTileMap.SetTile(cell, BGTile);
-                if (level[i, j] < 100)
+                Vector3Int cell = new Vector3Int(j-xStart, (col - i)-yStart, 0);
+                BGTileMap.SetTile(cell, colorNodeData.getBGTile());
+                if (levels.rows[i].row[j]< 100)
                     continue;
-                if (!levelNods.ContainsKey(level[i, j]))
+                if (!levelNods.ContainsKey(levels.rows[i].row[j]))
                 {
                     List<Vector3Int> temp = new List<Vector3Int>();
                     temp.Add(new Vector3Int(i, j, 0));
-                    levelNods.Add(level[i, j], temp);
+                    levelNods.Add(levels.rows[i].row[j], temp);
 
-                    nodeTileMap.SetTile(cell, getNodetile(level[i, j]).getNodeTile());
-                    createKnotFromID(level[i, j]);
+                    nodeTileMap.SetTile(cell, getNodetile(levels.rows[i].row[j]).getNodeTile());
+                    createKnotFromID(levels.rows[i].row[j]);
                 }
                 else
                 {
                    // levelNods.TryGetValue(level[i, j], out List<Vector3Int> temp);
                     //temp.Add(new Vector3Int(i, j, 0));
-                    nodeTileMap.SetTile(cell, getNodetile(level[i, j]).getNodeTile());
+                    nodeTileMap.SetTile(cell, getNodetile(levels.rows[i].row[j]).getNodeTile());
                 }
             }
         }
         gameState = GameState.PLAYING;
     }
-
+    /// <summary>
+    /// add the one knot of the usedknots list.
+    /// </summary>
     void createKnotFromID(int id_)
     {
         colorIDData colorIDDatas = colorNodeData.colorIDDatasList().FirstOrDefault(x => x.getID() == id_);
@@ -92,29 +104,25 @@ public class levelManager : MonoBehaviour
         usedBaseKnots.Add(cbaseKnots);
     }
 
+    /// <summary>
+    /// based on the id, fetches the colordata from SO
+    /// </summary>
     colorIDData getNodetile(int id_)
     {
         return colorNodeData.colorIDDatasList().FirstOrDefault(x => x.getID() == id_);
     }
 
-
-    public void inputRecieved(inputManager.InputType inputType_, Vector3 pos_)
-    {
-        if(inputType_ == inputManager.InputType.NONE)
-        {
-            processStopTouch(pos_);
-        }
-        if (inputType_ == inputManager.InputType.SWIPING)
-        {
-            processTouch(pos_);
-        }
-    }
+   
+    
+    /// <summary>
+    /// process the first touch and existing touch based on user input position.
+    /// </summary>
     void processTouch(Vector3 pos_)
     {
         cell = brickTileMap.WorldToCell(pos_);
         currentPos = cell;
         cursor.transform.position = new Vector2(pos_.x, pos_.y); ;
-        if (currentPos == prevPos)
+        if (currentPos == prevPos)//makes sure that all the Methods gets called only once per cell visit for optimization purpose.
             return;
         //Debug.Log("moving");
         setTileMapCells();
@@ -134,6 +142,10 @@ public class levelManager : MonoBehaviour
         }
         prevPos = currentPos;
     }
+
+    /// <summary>
+    /// one user input is stopped it resets some variables and current knot.
+    /// </summary>
     void processStopTouch(Vector3 pos_)
     {
         pressing = false;
@@ -147,6 +159,9 @@ public class levelManager : MonoBehaviour
         prevPos = new Vector3Int(-10000, -100000, -1);
     }
 
+    /// <summary>
+    /// gets the tiles of brick, node and wall layer map of current visiting cell
+    /// </summary>
     void setTileMapCells()
     {
         currentBrickTile = brickTileMap.GetTile<Tile>(cell);
@@ -154,6 +169,9 @@ public class levelManager : MonoBehaviour
         currentWallTile = BGTileMap.GetTile<Tile>(cell);
     }
 
+    /// <summary>
+    /// checks if the first touch is on the any node tile and activates that knot as current node.
+    /// </summary>
     void checkForNodeTouch(Vector3 point)
     {
         if (pressing)
@@ -173,6 +191,9 @@ public class levelManager : MonoBehaviour
             }
         }
     }
+    /// <summary>
+    /// checks if the first touch is on the any colored tile and activates that knot as current node.
+    /// </summary>
     void checkForLineTouch()
     {
         Tile tile = brickTileMap.GetTile<Tile>(cell);
@@ -187,6 +208,9 @@ public class levelManager : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// checks swips of input is getting blocked by other nodes or by some conditions. also checks if all tiles should be removed from currentknot if the conditions are met.
+    /// </summary>
     void checkSwipingNodes()
     {
         if (currentNodeTile != null && canDraw && (currentNodeTile != currentNode.getNodeTile() || (currentNodeTile == currentNode.getNodeTile() && currentNode.placedListCount() > 0)))
@@ -198,6 +222,10 @@ public class levelManager : MonoBehaviour
             canDraw = false;
         }
     }
+    /// <summary>
+    /// checks if current visition cell has empty places. if it does then based on some other conditions places the time on empty ones.
+    /// also checks if places if not empty and has colored tile. then proceeds to remove.
+    /// </summary>
     void checkAddOrRemove()
     {
         if (currentBrickTile == currentNode.getBrickTile())
@@ -209,6 +237,7 @@ public class levelManager : MonoBehaviour
         {
             if (canDraw)
             {
+                //checks if current position cell is far from last placed tile for some reason if not the procced to proccess current tile
                 if (currentNode.placedListCount() == 0 || !isDistance(cell, currentNode.lastPlacedPostion()))
                 {
                     currentNode.setTiles(cell, currentNodeTile);
@@ -219,7 +248,7 @@ public class levelManager : MonoBehaviour
                             currentNode.removeOtherTiles(othernode, cell);
                     }
                 }
-                else
+                else// if current cell is far from the last placed cell. checks all the in between tiles in same direction of input and proccess all those tiles as well as current one.
                 {
                     setTilesAtDistance(currentBrickTile, currentNodeTile, cell);
                 }
@@ -227,6 +256,9 @@ public class levelManager : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// checks the distance between the previous placed tile and current visiting cell.
+    /// </summary>
     bool isDistance(Vector3Int cell, Vector3Int prev)
     {
         if (prev.y == cell.y)
@@ -244,6 +276,10 @@ public class levelManager : MonoBehaviour
         return true;
     }
 
+    /// <summary>
+    /// in case of distance cell. checks all the adjucent tiles between previous placed tile and current visiting cell. only checks in current direction. either on y axis or x axis.
+    /// if conditions are met then procced to place tiles on visiting cell and all the cell between visiting cell and previous cell. 
+    /// </summary>
     void setTilesAtDistance(Tile tile, Tile tile2, Vector3Int cell)
     {
         if (currentNode.placedListCount() == 0)
@@ -306,13 +342,16 @@ public class levelManager : MonoBehaviour
         }
     }
 
+    /// <summary>
+    /// reset the values, list and all the layers of maps once the level is finished.
+    /// </summary>
     void resetLevel()
     {
-        for (int j = 0; j < level.GetLength(1); j++)
+        for (int j = 0; j < row; j++)
         {
-            for (int i = 0; i < level.GetLength(0); i++)
+            for (int i = 0; i < col; i++)
             {
-                Vector3Int cell = new Vector3Int(j - xStart, (level.GetLength(0) - i) - yStart, 0);
+                Vector3Int cell = new Vector3Int(j - xStart, (col - i) - yStart, 0);
                 nodeTileMap.SetTile(cell, null);
                 brickTileMap.SetTile(cell, null);
                 BGTileMap.SetTile(cell, null);
@@ -327,7 +366,21 @@ public class levelManager : MonoBehaviour
         levelNods.Clear();
         UIInGameManager.Instance.levelCompletedTextStat(false);
     }
+    /// <summary>
+    /// On every knot formation checks for all the other knot as well to check if level is completed.
+    /// </summary>
+    void loadNextLevel()
+    {
+        resetLevel();
+        gameManager.Instance.checkNextLevel();
+        setLevel();
+    }
+    #endregion
 
+    #region public methods
+    /// <summary>
+    /// On every knot formation checks for all the other knot as well to check if level is completed. and invokes loading of next level.
+    /// </summary>
     public bool checkCompletion()
     {
         for (int i = 0; i < usedBaseKnots.Count; i++)
@@ -343,11 +396,18 @@ public class levelManager : MonoBehaviour
         Invoke("loadNextLevel", 1);
         return true;
     }
-
-    void loadNextLevel()
+    public void inputRecieved(inputManager.InputType inputType_, Vector3 pos_)
     {
-        resetLevel();
-        gameManager.Instance.checkNextLevel();
-        setLevel();
+        if (inputType_ == inputManager.InputType.NONE)
+        {
+            processStopTouch(pos_);
+        }
+        if (inputType_ == inputManager.InputType.SWIPING)
+        {
+            processTouch(pos_);
+        }
     }
+    #endregion
+
+
 }

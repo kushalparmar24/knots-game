@@ -7,23 +7,23 @@ using UnityEngine.SceneManagement;
 public class UISceneController : MonoBehaviour
 {
     Dictionary<string, ScreenManager> screensInScenes;
-
-	private static UISceneController instance;
-
-	private string currentSceneName;
-	private ScreenManager currentScreenManager;
+	static UISceneController instance;
+	string currentSceneName;
+	ScreenManager currentScreenManager;
 	[SerializeField]
-	private ScreenManager.UIScreens screenToShow = ScreenManager.UIScreens.NONE;
+	ScreenManager.UIScreens screenToShow = ScreenManager.UIScreens.NONE;
 	Scene currentScene;
-
+	#region getters
 	public static UISceneController Instance
 	{
 		get { return instance; }
 	}
 
     public ScreenManager CurrentScreenManager { get => currentScreenManager; }
+	#endregion
 
-    private void Awake()
+	#region private methods
+	private void Awake()
 	{
 		if (instance == null)
 		{
@@ -39,6 +39,23 @@ public class UISceneController : MonoBehaviour
     {
         SceneManager.sceneLoaded += OnSceneWasLoaded;
     }
+	void Update()
+	{
+		if (currentScreenManager != null)
+			currentScreenManager.Update();
+	}
+
+	IEnumerator LoadSceneAsync(string Name)
+	{
+		AsyncOperation asyncOperation;
+		asyncOperation = SceneManager.LoadSceneAsync(Name, LoadSceneMode.Single);
+		while (!asyncOperation.isDone)
+		{
+			yield return null;
+		}
+
+		currentScene = SceneManager.GetSceneByName(Name);
+	}
 
 	private void OnSceneWasLoaded(Scene arg0, LoadSceneMode arg1)
 	{
@@ -64,12 +81,20 @@ public class UISceneController : MonoBehaviour
 			screenToShow = ScreenManager.UIScreens.NONE;
 		}
 	}
-	
+	#endregion
+
+	/// <summary>
+	/// enables the passed screentype from current scene.
+	/// </summary>
+	#region public methods
 	public void ShowUIScreen(ScreenManager.UIScreens uiScreen)
 	{
 		currentScreenManager.ShowUIScreen(uiScreen);
 	}
 
+	/// <summary>
+	/// loads the give scene and enables the passed screentype after scene is loaded
+	/// </summary>
 	public void ShowUIScreen(in string sceneName,  ScreenManager.UIScreens uiScreen)
 	{
         if (string.Equals(currentSceneName, sceneName))
@@ -81,18 +106,6 @@ public class UISceneController : MonoBehaviour
 		}
     }
 
-	IEnumerator LoadSceneAsync(string Name)
-	{
-		AsyncOperation asyncOperation;
-		asyncOperation = SceneManager.LoadSceneAsync(Name, LoadSceneMode.Single);
-		while (!asyncOperation.isDone)
-		{
-			yield return null;
-		}
-
-		currentScene = SceneManager.GetSceneByName(Name);
-	}
-
 	public void OnBackButtonPressed()
     {
 		currentScreenManager.BackButtonHandler();
@@ -102,10 +115,6 @@ public class UISceneController : MonoBehaviour
     {
         currentScreenManager.GoBack();
     }
-    // Update is called once per frame
-    void Update()
-    {
-		if(currentScreenManager!= null)
-			currentScreenManager.Update();
-	}
+    #endregion
+
 }

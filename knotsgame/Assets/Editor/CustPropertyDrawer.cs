@@ -6,6 +6,10 @@ using System.Collections;
 public class CustPropertyDrawer : PropertyDrawer {
 
 
+	/// <summary>
+	/// projects the arrylayout class. makes custom field property for rowData and row that makes interface like the 2d array. 
+	/// takes the row and column lenght from the level genertor class.
+	/// </summary>
 	public override void OnGUI(Rect position,SerializedProperty property,GUIContent label){
 		EditorGUI.PrefixLabel(position,label);
 		Rect newposition = position;

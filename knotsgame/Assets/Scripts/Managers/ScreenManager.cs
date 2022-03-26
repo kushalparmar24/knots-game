@@ -11,25 +11,60 @@ public class ScreenManager
         INGAMEHUD,
         PAUSE
     };
-
     private Stack<UIScreens> queuedScreens;
-
     Stack<UIScreens> activeDisplayedScreens;
     private Dictionary<UIScreens, GameObject> screenDict;
-
     UIScreens lastFullScreen;
-
     private UIScreens activeUIScreen;
-
     public UIScreens ActiveUIScreen { get => activeUIScreen; }
-
     public ScreenManager()
     {
         queuedScreens = new Stack<UIScreens>();
         activeDisplayedScreens = new Stack<UIScreens>();
         screenDict = new Dictionary<UIScreens, GameObject>();
     }
+    #region private methods
+    T GetComponent<T>(UIScreens screen)
+    {
+        return screenDict[screen].GetComponent<T>();
+    }
 
+    /// <summary>
+    /// Using to disable the active screens in the current scene when switching scenes.
+    /// </summary>
+    // disables all active displayed screens..
+    void DisablePrevScreens()
+    {
+        for (int i = activeDisplayedScreens.Count - 1; i >= 0; i--)
+        {
+            UIBase prevScreen = GetComponent<UIBase>(activeDisplayedScreens.Pop());
+            if (prevScreen != null)
+                prevScreen.gameObject.SetActive(false);
+        }
+        activeDisplayedScreens.Clear();
+    }
+    /// <summary>
+    /// if the current screen exists in the queue, Clears the queue till the current screen(remove enums behind the current screen)
+    /// </summary>
+    void CheckInQueue(UIScreens currentScreen)
+    {
+        if (queuedScreens.Contains(currentScreen))
+        {
+            int count = queuedScreens.Count;
+            for (int i = 0; i < count; i++)
+            {
+                queuedScreens.Pop();
+                if (queuedScreens.Peek() == lastFullScreen)
+                {
+                    queuedScreens.Pop(); // remove the current screen from the queue
+                    break;
+                }
+            }
+        }
+    }
+    #endregion
+
+    #region public methods
     public void FindAllScreens()
     {
         GameObject[] canvas = GameObject.FindGameObjectsWithTag("Canvas");
@@ -94,27 +129,7 @@ public class ScreenManager
         }
        
     }
-
-    T GetComponent<T>(UIScreens screen)
-    {
-        return screenDict[screen].GetComponent<T>();
-    }
-
-    /// <summary>
-    /// Using to disable the active screens in the current scene when switching scenes.
-    /// </summary>
-    // disables all active displayed screens..
-    void DisablePrevScreens()
-    {
-        for (int i = activeDisplayedScreens.Count - 1; i >= 0; i--)
-        {
-            UIBase prevScreen = GetComponent<UIBase>(activeDisplayedScreens.Pop());
-            if (prevScreen != null)
-                prevScreen.gameObject.SetActive(false);
-        }
-        activeDisplayedScreens.Clear();
-    }
-
+    
     /// <summary>
     /// Call this method to show the screen
     /// </summary>
@@ -182,25 +197,7 @@ public class ScreenManager
         activeDisplayedScreens.Push(screen);
     }
 
-    /// <summary>
-    /// if the current screen exists in the queue, Clears the queue till the current screen(remove enums behind the current screen)
-    /// </summary>
-    void CheckInQueue(UIScreens currentScreen)
-    {
-        if(queuedScreens.Contains(currentScreen))
-        {
-            int count = queuedScreens.Count;
-            for (int i = 0; i < count; i++)
-            {
-                queuedScreens.Pop();
-                if (queuedScreens.Peek() == lastFullScreen)
-                {
-                    queuedScreens.Pop(); // remove the current screen from the queue
-                    break;
-                }
-            }
-        }
-    }
+    
     public void AddScreen(UIScreens scr, GameObject screenObj)
     {
         GameObject screenObject = null;
@@ -215,4 +212,5 @@ public class ScreenManager
     {
         return screenDict[scr];
     }
+    #endregion
 }

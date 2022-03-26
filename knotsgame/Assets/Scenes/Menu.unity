@@ -132,7 +132,7 @@ GameObject:
   - component: {fileID: 246136627}
   - component: {fileID: 246136626}
   m_Layer: 0
-  m_Name: GameObject (1)
+  m_Name: audiomanager
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
@@ -998,7 +998,7 @@ GameObject:
   - component: {fileID: 1961997932}
   - component: {fileID: 1961997931}
   m_Layer: 0
-  m_Name: GameObject
+  m_Name: UISceneController
   m_TagString: Untagged
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0

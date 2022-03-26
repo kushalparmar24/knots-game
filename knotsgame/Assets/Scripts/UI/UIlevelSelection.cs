@@ -13,16 +13,17 @@ public class UIlevelSelection : UIBase
         levelpool = new List<GameObject>();
     }
 
+    /// <summary>
+    /// Instantiate level ui based on the level data and also cache gameobject on the list
+    /// </summary>
     private void OnEnable()
     {
-        
-        for(int i = 0;i<gameManager.Instance.getlevelData().Count;i++)
+        for(int i = 0;i<gameManager.Instance.getlevelDatas().Count;i++)
         {
             if(i < levelpool.Count)
             {
                 levelpool[i].GetComponent<levelElement>().setUI(i);
                 levelpool[i].SetActive(true);
-
             }
             else
             {
@@ -31,7 +32,6 @@ public class UIlevelSelection : UIBase
                 levelpool[i].GetComponent<levelElement>().setUI(i);
                 levelpool[i].SetActive(true);
             }
-
         }
     }
 }

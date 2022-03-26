@@ -8,11 +8,10 @@ using UnityEngine.SceneManagement;
 public class gameManager : MonoBehaviour
 {
     static gameManager instance;
-    public static gameManager Instance { get { return instance; } }
-
-    [SerializeField]List<int[,]> gameLevels;
+    List<ArrayLayout> gameLevels;
     FileManager fileManager = new FileManager();
     public int currentLevel;
+    public static gameManager Instance { get { return instance; } }
 
     private void Awake()
     {
@@ -24,49 +23,51 @@ public class gameManager : MonoBehaviour
             return;
         }
         DontDestroyOnLoad(this);
+       
+    }
+    private void Start()
+    {
         fetchLevels();
     }
-
-    public List<int[,]> getlevelData()
+    public List<ArrayLayout> getlevelDatas()
     {
         return gameLevels;
     }
 
+    /// <summary>
+    /// loads all the level at start of the the game and keep is stored in the list.
+    /// </summary>
     void fetchLevels()
     {
         bool DataLoaded = true;
         currentLevel = 10;
-        gameLevels = new List<int[,]>();
         
         while(DataLoaded)
         {
             string levelData = fileManager.ReadLevel(currentLevel);
-            if(levelData.Length <=0 || string.IsNullOrEmpty(levelData))
+            if(string.IsNullOrEmpty(levelData) || levelData.Length <= 0)
             {
                 DataLoaded = false;
             }
             else
             {
                 Debug.Log("levelloading");
-                int[,] myarry =  fileManager.getArry(levelData);
+                ArrayLayout myarry = JsonUtility.FromJson<ArrayLayout>(levelData);
                 gameLevels.Add(myarry);
                 currentLevel++;
             }
         }
         currentLevel = 0;
-        //SceneManager.LoadScene("game");
     }
 
+    /// <summary>
+    /// increases the level number and if the last level is reached, then goes back to index 0
+    /// </summary>
     public void checkNextLevel()
     {
         if (currentLevel < (gameLevels.Count - 1))
             currentLevel++;
         else
             currentLevel = 0;
-    }
-
-    public void loadScene()
-    {
-        SceneManager.LoadScene("game");
     }
 }

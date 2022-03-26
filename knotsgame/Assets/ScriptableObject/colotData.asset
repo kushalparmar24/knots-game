@@ -28,3 +28,8 @@ MonoBehaviour:
   - id: 104
     nodeTile: {fileID: 11400000, guid: 6a6138d055e4c0c4286f380f11bbaa22, type: 2}
     bricktile: {fileID: 11400000, guid: 824c7e89057c12a44bb50e1e1190f848, type: 2}
+  BGTile: {fileID: 11400000, guid: 763fbcacd95775d48baaff5a5e25469d, type: 2}
+  halfLineTile: {fileID: 11400000, guid: 43e1df0261033534bb33a56dee99384a, type: 2}
+  angleLineTile: {fileID: 11400000, guid: d6a0e8998ac76e4499ed5afa9b7e38f9, type: 2}
+  fullLineTile: {fileID: 11400000, guid: 707f45dd427aa6d4dbfd52208a8acc3e, type: 2}
+  nodeLineTile: {fileID: 11400000, guid: 468e77e2e166c4649a5b03b9a6d5d040, type: 2}
