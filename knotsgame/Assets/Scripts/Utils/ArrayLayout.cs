@@ -18,4 +18,5 @@ public class ArrayLayout  {
 		ysize = ysize_;
 		rows = new rowData[xsize];
 	}
+	
 }

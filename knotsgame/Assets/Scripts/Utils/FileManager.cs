@@ -19,6 +19,7 @@ public class FileManager
         www.SendWebRequest();
         while (!www.isDone)
         {
+            //
         }
         if (www.isNetworkError)
         {
@@ -65,7 +66,7 @@ public class FileManager
         
     //    return level2D;
     //}
-    public void writeLevel(int[,] myarry)
+    public void writeLevel(int[,] myarry,int lvlnum)
     {
        // int[,] myarry = new int[5, 5];
 
@@ -84,7 +85,7 @@ public class FileManager
         }
 
         string result = sb.ToString();
-        File.WriteAllText(levelPath + "10.json", result);
+        File.WriteAllText(levelPath + lvlnum +".json", result);
 
     }
 }

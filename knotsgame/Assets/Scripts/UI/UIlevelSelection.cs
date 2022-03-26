@@ -2,7 +2,7 @@
 using System.Collections.Generic;
 using UnityEngine;
 
-public class UIlevelSelection : MonoBehaviour
+public class UIlevelSelection : UIBase
 {
     public GameObject content;
     public GameObject levelElement;
@@ -20,14 +20,12 @@ public class UIlevelSelection : MonoBehaviour
         {
             if(i < levelpool.Count)
             {
-                Debug.Log("from pool");
                 levelpool[i].GetComponent<levelElement>().setUI(i);
                 levelpool[i].SetActive(true);
 
             }
             else
             {
-                Debug.Log("from prefab");
                 GameObject currentElement = Instantiate(levelElement, content.transform);
                 levelpool.Add(currentElement);
                 levelpool[i].GetComponent<levelElement>().setUI(i);

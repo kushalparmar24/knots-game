@@ -17,7 +17,10 @@ public class inputManager : MonoBehaviour
     private void Update()
     {
         if (levelManager.Instance.gameState != levelManager.GameState.PLAYING)
+        {
+            inputType = InputType.NONE;
             return;
+        }
         Vector3 point = Camera.main.ScreenToWorldPoint(Input.mousePosition);
         if (Input.GetMouseButtonDown(0))
         {

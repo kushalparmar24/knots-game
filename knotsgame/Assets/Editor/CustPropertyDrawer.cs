@@ -31,6 +31,6 @@ public class CustPropertyDrawer : PropertyDrawer {
 	}
 
 	public override float GetPropertyHeight(SerializedProperty property,GUIContent label){
-		return 18f * 8;
+		return 18f * 15;
 	}
 }

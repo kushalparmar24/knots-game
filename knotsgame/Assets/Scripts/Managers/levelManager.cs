@@ -7,21 +7,25 @@ using System.Linq;
 public class levelManager : MonoBehaviour
 {
     static levelManager instance;
-    public enum GameState { PLAYING, LOADING, COMPLETED };
+    public enum GameState { PLAYING, LOADING, COMPLETED,PAUSED };
     public GameState gameState;
     [SerializeField] public Tile halfLineTile, angleLineTile, fullLineTile, nodeLineTile;
     [SerializeField] public Tilemap brickTileMap, BGTileMap, nodeTileMap, lineTileMap;
     [SerializeField] colorNodeData colorNodeData;
     [SerializeField] Tile  BGTile;
+    [SerializeField] GameObject cursor;
     List<baseKnots> usedBaseKnots = new List<baseKnots>();
     baseKnots currentNode;
     bool pressing, canDraw;
     int[,] level;
+    int xStart;
+    int yStart;
     Dictionary<int, List<Vector3Int>> levelNods;
     FileManager fileManager = new FileManager();
    
     Vector3Int currentPos, prevPos, cell;
     Tile currentBrickTile, currentNodeTile, currentWallTile;
+
 
     public List<baseKnots> getUsedBaseKnots()
     {
@@ -47,13 +51,17 @@ public class levelManager : MonoBehaviour
     void setLevel()
     {
         gameState = GameState.LOADING;
+        UIInGameManager.Instance.setLevelText();
         level = gameManager.Instance.getlevelData()[gameManager.Instance.currentLevel];
         levelNods = new Dictionary<int, List<Vector3Int>>();
+
+        xStart = level.GetLength(1)/2;
+        yStart = level.GetLength(0)/2;
         for (int j = 0; j < level.GetLength(1); j++)
         {
             for (int i = 0; i < level.GetLength(0); i++)
             {
-                Vector3Int cell = new Vector3Int(j, level.GetLength(0) - i, 0);
+                Vector3Int cell = new Vector3Int(j-xStart, (level.GetLength(0) - i)-yStart, 0);
                 BGTileMap.SetTile(cell, BGTile);
                 if (level[i, j] < 100)
                     continue;
@@ -62,28 +70,26 @@ public class levelManager : MonoBehaviour
                     List<Vector3Int> temp = new List<Vector3Int>();
                     temp.Add(new Vector3Int(i, j, 0));
                     levelNods.Add(level[i, j], temp);
-                    Vector3Int cell1 = new Vector3Int(j, level.GetLength(0) - i, 0);
-                    nodeTileMap.SetTile(cell1, getNodetile(level[i, j]).getNodeTile());
+
+                    nodeTileMap.SetTile(cell, getNodetile(level[i, j]).getNodeTile());
+                    createKnotFromID(level[i, j]);
                 }
                 else
                 {
-                    levelNods.TryGetValue(level[i, j], out List<Vector3Int> temp);
-                    temp.Add(new Vector3Int(i, j, 0));
-                    Vector3Int cell2 = new Vector3Int(j, level.GetLength(0) - i, 0);
-                    nodeTileMap.SetTile(cell2, getNodetile(level[i, j]).getNodeTile());
+                   // levelNods.TryGetValue(level[i, j], out List<Vector3Int> temp);
+                    //temp.Add(new Vector3Int(i, j, 0));
+                    nodeTileMap.SetTile(cell, getNodetile(level[i, j]).getNodeTile());
                 }
             }
         }
-        foreach (var pair in levelNods)
-        {
-            int i = 0;
-            int id = pair.Key;
-            colorIDData colorIDDatas = colorNodeData.colorIDDatasList().FirstOrDefault(x => x.getID() == id);
-            baseKnots cbaseKnots = new baseKnots(colorIDDatas.getID(), colorIDDatas.getBrickTile(), colorIDDatas.getNodeTile());
-            usedBaseKnots.Add(cbaseKnots);
-            i++;
-        }
         gameState = GameState.PLAYING;
+    }
+
+    void createKnotFromID(int id_)
+    {
+        colorIDData colorIDDatas = colorNodeData.colorIDDatasList().FirstOrDefault(x => x.getID() == id_);
+        baseKnots cbaseKnots = new baseKnots(colorIDDatas.getID(), colorIDDatas.getBrickTile(), colorIDDatas.getNodeTile());
+        usedBaseKnots.Add(cbaseKnots);
     }
 
     colorIDData getNodetile(int id_)
@@ -107,9 +113,10 @@ public class levelManager : MonoBehaviour
     {
         cell = brickTileMap.WorldToCell(pos_);
         currentPos = cell;
+        cursor.transform.position = new Vector2(pos_.x, pos_.y); ;
         if (currentPos == prevPos)
             return;
-        Debug.Log("moving");
+        //Debug.Log("moving");
         setTileMapCells();
         checkForNodeTouch(pos_);
         if (!pressing)
@@ -131,6 +138,7 @@ public class levelManager : MonoBehaviour
     {
         pressing = false;
         canDraw = false;
+        cursor.SetActive(false);
         for (int i = 0; i < usedBaseKnots.Count; i++)
         {
             usedBaseKnots[i].resetdict();
@@ -160,6 +168,8 @@ public class levelManager : MonoBehaviour
                 currentNode.setFirstNodeData(cell);
                 canDraw = true;
                 pressing = true;
+                cursor.SetActive(true);
+                cursor.GetComponent<SpriteRenderer>().color = new Color(currentNode.getNodeTile().color.r, currentNode.getNodeTile().color.g, currentNode.getNodeTile().color.b, 0.5f);
             }
         }
     }
@@ -168,9 +178,13 @@ public class levelManager : MonoBehaviour
         Tile tile = brickTileMap.GetTile<Tile>(cell);
         baseKnots possibleNode = usedBaseKnots.FirstOrDefault(x => x.getBrickTile() == tile);
         if (possibleNode != null)
+        {
             currentNode = possibleNode;
-        canDraw = true;
-        pressing = true;
+            canDraw = true;
+            pressing = true;
+            cursor.SetActive(true);
+            cursor.GetComponent<SpriteRenderer>().color = new Color(currentNode.getNodeTile().color.r, currentNode.getNodeTile().color.g, currentNode.getNodeTile().color.b, 0.5f);
+        }
     }
 
     void checkSwipingNodes()
@@ -298,15 +312,20 @@ public class levelManager : MonoBehaviour
         {
             for (int i = 0; i < level.GetLength(0); i++)
             {
-                Vector3Int cell = new Vector3Int(j, level.GetLength(0) - i, 0);
+                Vector3Int cell = new Vector3Int(j - xStart, (level.GetLength(0) - i) - yStart, 0);
                 nodeTileMap.SetTile(cell, null);
                 brickTileMap.SetTile(cell, null);
                 BGTileMap.SetTile(cell, null);
                 lineTileMap.SetTile(cell, null);
             }
         }
+        currentNode = null;
+        pressing = false;
+        canDraw = false;
+        cursor.SetActive(false);
         usedBaseKnots.Clear();
         levelNods.Clear();
+        UIInGameManager.Instance.levelCompletedTextStat(false);
     }
 
     public bool checkCompletion()
@@ -319,8 +338,9 @@ public class levelManager : MonoBehaviour
             }
         }
         Debug.Log("Level Completed");
+        UIInGameManager.Instance.levelCompletedTextStat(true);
         gameState = GameState.COMPLETED;
-        Invoke("loadNextLevel", 2);
+        Invoke("loadNextLevel", 1);
         return true;
     }
 
