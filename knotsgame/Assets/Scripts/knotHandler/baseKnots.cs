@@ -10,7 +10,7 @@ using System.Linq;
 /// class the holds the data of each colored knots and its behaviour.
 /// </summary>
 [Serializable]
-public class baseKnots 
+public class baseKnots:IKnot
 {
     [SerializeField] int id;
     [SerializeField] Tile nodeTile;
@@ -37,6 +37,10 @@ public class baseKnots
     {
         return placedList[placedList.Count-1].position;
     }
+    public bool isKnotActive()
+    {
+        return firstNode;
+    }
     public Tile getNodeTile()
     {
         return nodeTile;
@@ -50,6 +54,7 @@ public class baseKnots
     {
         removedNodes.Clear();
     }
+   
     #endregion
 
     #region private methods
@@ -242,6 +247,42 @@ public class baseKnots
         levelManager.Instance.brickTileMap.SetTile(pos_, tile);
         levelManager.Instance.lineTileMap.SetTile(pos_, tile);
     }
+
+    /// <summary>
+    /// is user input is on the second node of the formation it checks it the adjcent cells has last placed brick. if it is then returns true and lets the this knot set as completed knot.
+    /// </summary>
+    bool isAdjcentCellHasBrick(Vector3Int cell_)
+    {
+        if (placedListCount() == 0)
+            return false;
+        Tile bricktile = null;
+        Vector3Int temp;
+        temp = new Vector3Int(cell_.x + 1, cell_.y, cell_.z);
+        bricktile = levelManager.Instance.brickTileMap.GetTile<Tile>(temp);
+        if (bricktile == getBrickTile() && lastPlacedPostion() == temp)
+        {
+            return true;
+        }
+        temp = new Vector3Int(cell_.x - 1, cell_.y, cell_.z);
+        bricktile = levelManager.Instance.brickTileMap.GetTile<Tile>(temp);
+        if (bricktile == getBrickTile() && lastPlacedPostion() == temp)
+        {
+            return true;
+        }
+        temp = new Vector3Int(cell_.x, cell_.y - 1, cell_.z);
+        bricktile = levelManager.Instance.brickTileMap.GetTile<Tile>(temp);
+        if (bricktile == getBrickTile() && lastPlacedPostion() == temp)
+        {
+            return true;
+        }
+        temp = new Vector3Int(cell_.x, cell_.y + 1, cell_.z);
+        bricktile = levelManager.Instance.brickTileMap.GetTile<Tile>(temp);
+        if (bricktile == getBrickTile() && lastPlacedPostion() == temp)
+        {
+            return true;
+        }
+        return false;
+    }
     #endregion
 
     #region public methods
@@ -288,7 +329,6 @@ public class baseKnots
     {
         if (placedList.Count > 0 && cell_ == placedList[placedList.Count - 1].position)
         {
-
             return;
         }
         var myKey = placedList.FirstOrDefault(x => x.position == cell_);
@@ -314,11 +354,14 @@ public class baseKnots
     /// <param name="forceRemove"></param> setting this value true will forcefully removed all the tiles without condition check.
     public void removeAllTile(Vector3Int currentPos, bool forceRemove = false)
     {
-        if (!isSameNode(currentPos) && !forceRemove)
+        if (!isSameNode(currentPos) && !forceRemove )
         {
-            setTiles(currentPos, nodeTile);
-            setCompletion();
-            levelManager.Instance.checkCompletion();
+            if (isAdjcentCellHasBrick(currentPos))
+            {
+                setTiles(currentPos, nodeTile);
+                setCompletion();
+                levelManager.Instance.checkCompletion();
+            }
             return;
         }
         for (int i = 0; i < placedList.Count; i++)

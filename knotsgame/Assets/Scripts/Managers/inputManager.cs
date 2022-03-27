@@ -4,7 +4,7 @@ using UnityEngine;
 
 public class inputManager : MonoBehaviour
 {
-    public enum InputType { NONE, SWIPING };
+    public enum InputType { NONE, SWIPING, FIRSTTOUCH };
     Vector3 point;
     InputType inputType; 
     public static inputManager instance;
@@ -28,7 +28,7 @@ public class inputManager : MonoBehaviour
          point = Camera.main.ScreenToWorldPoint(Input.mousePosition);
         if (Input.GetMouseButtonDown(0))
         {
-            inputType = InputType.SWIPING;
+            inputType = InputType.FIRSTTOUCH;
             levelManager.Instance.inputRecieved(inputType, point);
         }
         if (Input.GetMouseButtonUp(0))
@@ -37,8 +37,9 @@ public class inputManager : MonoBehaviour
             levelManager.Instance.inputRecieved(inputType, point);
         }
 
-        if (inputType == InputType.SWIPING)
+        if (inputType == InputType.FIRSTTOUCH || inputType == InputType.SWIPING)
         {
+            inputType = InputType.SWIPING;
             levelManager.Instance.inputRecieved(inputType, point);
         }
 #if UNITY_ANDROID

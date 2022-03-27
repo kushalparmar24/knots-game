@@ -13,7 +13,7 @@ public class levelManager : MonoBehaviour
     [SerializeField] colorNodeData colorNodeData;
     [SerializeField] GameObject cursor;
     List<baseKnots> usedBaseKnots = new List<baseKnots>();
-    baseKnots currentNode;
+    baseKnots currentKnot;
     bool pressing, canDraw;
     ArrayLayout levels;
     int xStart;
@@ -49,7 +49,7 @@ public class levelManager : MonoBehaviour
         //DontDestroyOnLoad(this);
 
         gameState = GameState.LOADING;
-        currentNode = null;
+        currentKnot = null;
         setLevel();
     }
     /// <summary>
@@ -124,13 +124,12 @@ public class levelManager : MonoBehaviour
         cursor.transform.position = new Vector2(pos_.x, pos_.y); ;
         if (currentPos == prevPos)//makes sure that all the Methods gets called only once per cell visit for optimization purpose.
             return;
-        //Debug.Log("moving");
         setTileMapCells();
-        checkForNodeTouch(pos_);
-        if (!pressing)
-        {
-            checkForLineTouch();
-        }
+        //checkForNodeTouch(pos_);
+        //if (!pressing)
+        //{
+        //    checkForLineTouch();
+        //}
 
         if(pressing)
         {
@@ -142,6 +141,19 @@ public class levelManager : MonoBehaviour
            // canDraw = true;
         }
         prevPos = currentPos;
+    }
+    void processFristTouch(Vector3 pos_)
+    {
+        cell = brickTileMap.WorldToCell(pos_);
+        currentPos = cell;
+        cursor.transform.position = new Vector2(pos_.x, pos_.y); ;
+       
+        setTileMapCells();
+        checkForNodeTouch(pos_);
+        if (!pressing)
+        {
+            checkForLineTouch();
+        }
     }
 
     /// <summary>
@@ -156,7 +168,7 @@ public class levelManager : MonoBehaviour
         {
             usedBaseKnots[i].resetdict();
         }
-        currentNode = null;
+        currentKnot = null;
         prevPos = new Vector3Int(-10000, -100000, -1);
     }
 
@@ -183,12 +195,12 @@ public class levelManager : MonoBehaviour
         {
             if (currentNodeTile == usedBaseKnots[i].getNodeTile())
             {
-                currentNode = usedBaseKnots[i];
-                currentNode.setFirstNodeData(cell);
+                currentKnot = usedBaseKnots[i];
+                currentKnot.setFirstNodeData(cell);
                 canDraw = true;
                 pressing = true;
                 cursor.SetActive(true);
-                cursor.GetComponent<SpriteRenderer>().color = new Color(currentNode.getNodeTile().color.r, currentNode.getNodeTile().color.g, currentNode.getNodeTile().color.b, 0.5f);
+                cursor.GetComponent<SpriteRenderer>().color = new Color(currentKnot.getNodeTile().color.r, currentKnot.getNodeTile().color.g, currentKnot.getNodeTile().color.b, 0.5f);
             }
         }
     }
@@ -201,11 +213,11 @@ public class levelManager : MonoBehaviour
         baseKnots possibleNode = usedBaseKnots.FirstOrDefault(x => x.getBrickTile() == tile);
         if (possibleNode != null)
         {
-            currentNode = possibleNode;
+            currentKnot = possibleNode;
             canDraw = true;
             pressing = true;
             cursor.SetActive(true);
-            cursor.GetComponent<SpriteRenderer>().color = new Color(currentNode.getNodeTile().color.r, currentNode.getNodeTile().color.g, currentNode.getNodeTile().color.b, 0.5f);
+            cursor.GetComponent<SpriteRenderer>().color = new Color(currentKnot.getNodeTile().color.r, currentKnot.getNodeTile().color.g, currentKnot.getNodeTile().color.b, 0.5f);
         }
     }
 
@@ -214,11 +226,11 @@ public class levelManager : MonoBehaviour
     /// </summary>
     void checkSwipingNodes()
     {
-        if (currentNodeTile != null && canDraw && (currentNodeTile != currentNode.getNodeTile() || (currentNodeTile == currentNode.getNodeTile() && currentNode.placedListCount() > 0)))
+        if (currentNodeTile != null && canDraw && (currentNodeTile != currentKnot.getNodeTile() || (currentNodeTile == currentKnot.getNodeTile() && currentKnot.placedListCount() > 0)))
         {
-            if (currentNodeTile == currentNode.getNodeTile() && currentNode.placedListCount() > 0)
+            if (currentNodeTile == currentKnot.getNodeTile() && currentKnot.placedListCount() > 0)
             {
-                currentNode.removeAllTile(cell);
+                currentKnot.removeAllTile(cell);
             }
             canDraw = false;
         }
@@ -229,29 +241,30 @@ public class levelManager : MonoBehaviour
     /// </summary>
     void checkAddOrRemove()
     {
-        if (currentBrickTile == currentNode.getBrickTile())
+        if (currentBrickTile == currentKnot.getBrickTile())
         {
             canDraw = true;
-            currentNode.removeTile(cell);
+            currentKnot.removeTile(cell);
         }
-        else if (currentBrickTile != currentNode.getBrickTile())
+        else if (currentBrickTile != currentKnot.getBrickTile())
         {
             if (canDraw)
             {
                 //checks if current position cell is far from last placed tile for some reason if not the procced to proccess current tile
-                if (currentNode.placedListCount() == 0 || !isDistance(cell, currentNode.lastPlacedPostion()))
+               // if (currentNode.placedListCount() == 0 || !isDistance(cell, currentNode.lastPlacedPostion()))
+                if (!isDistance(cell))
                 {
-                    currentNode.setTiles(cell, currentNodeTile);
-                    if (currentNodeTile != currentNode.getNodeTile())
+                    currentKnot.setTiles(cell, currentNodeTile);
+                    if (currentNodeTile != currentKnot.getNodeTile())
                     {
                         baseKnots othernode = usedBaseKnots.FirstOrDefault(x => x.getBrickTile() == currentBrickTile);
                         if (othernode != null)
-                            currentNode.removeOtherTiles(othernode, cell);
+                            currentKnot.removeOtherTiles(othernode, cell);
                     }
                 }
                 else// if current cell is far from the last placed cell. checks all the in between tiles in same direction of input and proccess all those tiles as well as current one.
                 {
-                    setTilesAtDistance(currentBrickTile, currentNodeTile, cell);
+                    setTilesAtDistance();
                 }
             }
         }
@@ -260,8 +273,17 @@ public class levelManager : MonoBehaviour
     /// <summary>
     /// checks the distance between the previous placed tile and current visiting cell.
     /// </summary>
-    bool isDistance(Vector3Int cell, Vector3Int prev)
+    bool isDistance(Vector3Int cell)
     {
+        bool isFirstNode = currentKnot.isKnotActive();
+        if (currentKnot.placedListCount() == 0 && !isFirstNode)
+            return false;
+        Vector3Int prev;
+        if (currentKnot.placedListCount() > 0)
+            prev = currentKnot.lastPlacedPostion();
+        else
+            prev = currentKnot.firstNodePos;
+
         if (prev.y == cell.y)
         {
             int diff = cell.x - prev.x;
@@ -281,90 +303,107 @@ public class levelManager : MonoBehaviour
     /// in case of distance cell. checks all the adjucent tiles between previous placed tile and current visiting cell. only checks in current direction. either on y axis or x axis.
     /// if conditions are met then procced to place tiles on visiting cell and all the cell between visiting cell and previous cell. 
     /// </summary>
-    void setTilesAtDistance(Tile tile, Tile tile2, Vector3Int cell)
+    void setTilesAtDistance()
     {
-        if (currentNode.placedListCount() == 0)
+        if (currentBrickTile != null)
             return;
-        if (tile == null)
+        bool isFirstNode = currentKnot.isKnotActive();
+        if (currentKnot.placedListCount() == 0 && !isFirstNode)
+            return;
+        Vector3Int lastbrick;
+        if (currentKnot.placedListCount() > 0)
+            lastbrick = currentKnot.lastPlacedPostion();
+        else
+            lastbrick = currentKnot.firstNodePos;
+
+        //lastbrick = currentNode.lastPlacedPostion();
+        if (lastbrick.y == cell.y || lastbrick.x == cell.x)
         {
-            Vector3Int lastbrick = currentNode.lastPlacedPostion();
-            if (lastbrick.y == cell.y || lastbrick.x == cell.x)
+            bool horizontal = true;
+            int diff;
+            if (lastbrick.y == cell.y)
             {
-                bool horizontal = true;
-                int diff;
-                if (lastbrick.y == cell.y)
+                horizontal = true;
+                diff = cell.x - lastbrick.x;
+            }
+            else
+            {
+                horizontal = false;
+                diff = cell.y - lastbrick.y;
+            }
+            List<nextNodeData> possible = new List<nextNodeData>();
+            for (int i = 0; i < Mathf.Abs(diff); i++)
+            {
+                Vector3Int posToCheck;
+                if (horizontal)
                 {
-                    horizontal = true;
-                    diff = cell.x - lastbrick.x;
+                    if (cell.x > lastbrick.x) posToCheck = new Vector3Int(lastbrick.x + (i + 1), lastbrick.y, 0);
+                    else posToCheck = new Vector3Int(lastbrick.x - (i + 1), lastbrick.y, 0);
                 }
                 else
                 {
-                    horizontal = false;
-                    diff = cell.y - lastbrick.y;
-                }
-                List<nextNodeData> possible = new List<nextNodeData>();
-                for (int i = 0; i < Mathf.Abs(diff); i++)
-                {
-                    Vector3Int posToCheck;
-                    if (horizontal)
-                    {
-                        if (cell.x > lastbrick.x) posToCheck = new Vector3Int(lastbrick.x + (i + 1), lastbrick.y, 0);
-                        else posToCheck = new Vector3Int(lastbrick.x - (i + 1), lastbrick.y, 0);
-                    }
-                    else
-                    {
-                        if (cell.y > lastbrick.y) posToCheck = new Vector3Int(lastbrick.x, lastbrick.y + (i + 1), 0);
-                        else posToCheck = new Vector3Int(lastbrick.x, lastbrick.y - (i + 1), 0);
-                    }
-
-                    Tile bricktile = brickTileMap.GetTile<Tile>(posToCheck);
-                    Tile nodetile = nodeTileMap.GetTile<Tile>(posToCheck);
-                    Tile bgtile = BGTileMap.GetTile<Tile>(posToCheck);
-                    if (bgtile != null && nodetile == null) possible.Add(new nextNodeData(nodetile, bricktile, posToCheck));
-                    else return;
+                    if (cell.y > lastbrick.y) posToCheck = new Vector3Int(lastbrick.x, lastbrick.y + (i + 1), 0);
+                    else posToCheck = new Vector3Int(lastbrick.x, lastbrick.y - (i + 1), 0);
                 }
 
-                for (int i = 0; i < possible.Count; i++)
+                Tile bricktile = brickTileMap.GetTile<Tile>(posToCheck);
+                Tile nodetile = nodeTileMap.GetTile<Tile>(posToCheck);
+                Tile bgtile = BGTileMap.GetTile<Tile>(posToCheck);
+                if (bgtile != null && nodetile == null) possible.Add(new nextNodeData(nodetile, bricktile, posToCheck));
+                else return;
+            }
+
+            for (int i = 0; i < possible.Count; i++)
+            {
+                currentKnot.setTiles(possible[i].position, possible[i].nodeTile);
+                if (currentNodeTile != currentKnot.getNodeTile())
                 {
-                    currentNode.setTiles(possible[i].position, possible[i].nodeTile);
-                    if (tile2 != currentNode.getNodeTile())
-                    {
-                        baseKnots othernode = usedBaseKnots.FirstOrDefault(x => x.getBrickTile() == possible[i].brickTile);
-                        if (othernode != null)
-                            currentNode.removeOtherTiles(othernode, possible[i].position);
-                    }
+                    baseKnots othernode = usedBaseKnots.FirstOrDefault(x => x.getBrickTile() == possible[i].brickTile);
+                    if (othernode != null)
+                        currentKnot.removeOtherTiles(othernode, possible[i].position);
                 }
             }
         }
     }
 
+    /// <summary>
+    /// If the moves are blocked previously by other nodes or walls. it recheck if the input position is valid again by comparing the last placed brick or last active node. 
+    /// </summary>
     bool checkIfNoBlock(bool canDraw_, Vector3Int cell_)
     {
         //if (currentBrickTile != null)
         //    return canDraw_;
-        Tile bricktile = null, nodetile= null, bgtile = null;
+        Tile bricktile = null, nodetile = null;
         Vector3Int temp;
         temp = new Vector3Int(cell_.x + 1, cell_.y, cell_.z);
-        checkInAllLayer(temp, ref bricktile, ref  nodetile, ref  bgtile);
-        if ((nodetile == currentNode.getNodeTile() && temp == currentNode.firstNodePos) || (bricktile == currentNode.getBrickTile() && currentNode.placedListCount() > 0 && currentNode.lastPlacedPostion() == temp))
+        bricktile = brickTileMap.GetTile<Tile>(temp);
+        nodetile = nodeTileMap.GetTile<Tile>(temp);
+        if ((nodetile == currentKnot.getNodeTile() && temp == currentKnot.firstNodePos) || 
+            (bricktile == currentKnot.getBrickTile() && currentKnot.placedListCount() > 0 && currentKnot.lastPlacedPostion() == temp))
         {
             return true;
         }
         temp = new Vector3Int(cell_.x - 1, cell_.y, cell_.z);
-        checkInAllLayer(temp, ref bricktile, ref nodetile, ref bgtile);
-        if (nodetile == currentNode.getNodeTile() && temp == currentNode.firstNodePos || (bricktile == currentNode.getBrickTile() && currentNode.placedListCount() > 0 && currentNode.lastPlacedPostion() == temp))
+        bricktile = brickTileMap.GetTile<Tile>(temp);
+        nodetile = nodeTileMap.GetTile<Tile>(temp);
+        if (nodetile == currentKnot.getNodeTile() && temp == currentKnot.firstNodePos || 
+            (bricktile == currentKnot.getBrickTile() && currentKnot.placedListCount() > 0 && currentKnot.lastPlacedPostion() == temp))
         {
             return true;
         }
         temp = new Vector3Int(cell_.x, cell_.y-1, cell_.z);
-        checkInAllLayer(temp, ref bricktile, ref nodetile, ref bgtile);
-        if (nodetile == currentNode.getNodeTile() && temp == currentNode.firstNodePos || (bricktile == currentNode.getBrickTile() && currentNode.placedListCount() > 0 && currentNode.lastPlacedPostion() == temp))
+        bricktile = brickTileMap.GetTile<Tile>(temp);
+        nodetile = nodeTileMap.GetTile<Tile>(temp);
+        if (nodetile == currentKnot.getNodeTile() && temp == currentKnot.firstNodePos || 
+            (bricktile == currentKnot.getBrickTile() && currentKnot.placedListCount() > 0 && currentKnot.lastPlacedPostion() == temp))
         {
             return true;
         }
         temp = new Vector3Int(cell_.x , cell_.y +1, cell_.z);
-        checkInAllLayer(temp, ref bricktile, ref nodetile, ref bgtile);
-        if (nodetile == currentNode.getNodeTile() && temp == currentNode.firstNodePos || (bricktile == currentNode.getBrickTile() && currentNode.placedListCount() > 0 && currentNode.lastPlacedPostion() == temp))
+        bricktile = brickTileMap.GetTile<Tile>(temp);
+        nodetile = nodeTileMap.GetTile<Tile>(temp);
+        if (nodetile == currentKnot.getNodeTile() && temp == currentKnot.firstNodePos || 
+            (bricktile == currentKnot.getBrickTile() && currentKnot.placedListCount() > 0 && currentKnot.lastPlacedPostion() == temp))
         {
             return true;
         }
@@ -372,12 +411,7 @@ public class levelManager : MonoBehaviour
         return canDraw_;
     }
 
-    void checkInAllLayer(Vector3Int cell_,ref Tile bricktile, ref Tile nodetile, ref Tile bgtile)
-    {
-        bricktile = brickTileMap.GetTile<Tile>(cell_);
-        nodetile = nodeTileMap.GetTile<Tile>(cell_);
-        bgtile = BGTileMap.GetTile<Tile>(cell_);
-    }
+    
 
     /// <summary>
     /// reset the values, list and all the layers of maps once the level is finished.
@@ -395,7 +429,7 @@ public class levelManager : MonoBehaviour
                 lineTileMap.SetTile(cell, null);
             }
         }
-        currentNode = null;
+        currentKnot = null;
         pressing = false;
         canDraw = false;
         cursor.SetActive(false);
@@ -442,6 +476,10 @@ public class levelManager : MonoBehaviour
         if (inputType_ == inputManager.InputType.SWIPING)
         {
             processTouch(pos_);
+        }
+        if (inputType_ == inputManager.InputType.FIRSTTOUCH)
+        {
+            processFristTouch(pos_);
         }
     }
     #endregion
