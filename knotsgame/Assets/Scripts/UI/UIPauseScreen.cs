@@ -17,12 +17,12 @@ public class UIPauseScreen : UIBase
     void OnLevelButtonClick()
     {
         levelManager.Instance.resetLevel();
-        UISceneController.Instance.ShowUIScreen("Menu",ScreenManager.UIScreens.LEVELSELECTION);
+        UISceneController.Instance.ShowUIScreen(gameManager.Instance.MenuScene,ScreenManager.UIScreens.LEVELSELECTION);
     }
     void OnMenuButtonClick()
     {
         levelManager.Instance.resetLevel();
-        UISceneController.Instance.ShowUIScreen("Menu",ScreenManager.UIScreens.MENU);
+        UISceneController.Instance.ShowUIScreen(gameManager.Instance.MenuScene,ScreenManager.UIScreens.MENU);
     }
     void OnBackButtonClick()
     {

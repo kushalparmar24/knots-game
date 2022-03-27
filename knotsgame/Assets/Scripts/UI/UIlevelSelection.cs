@@ -1,16 +1,19 @@
-﻿using System.Collections;
-using System.Collections.Generic;
+﻿using System.Collections.Generic;
 using UnityEngine;
+using UnityEngine.UI;
+
 
 public class UIlevelSelection : UIBase
 {
     public GameObject content;
     public GameObject levelElement;
-   List<GameObject> levelpool;
+    [SerializeField] Button backBtn;
+    List<GameObject> levelpool;
 
     private void Awake()
     {
         levelpool = new List<GameObject>();
+        backBtn.onClick.AddListener(() => OnBackButtonClick());
     }
 
     /// <summary>
@@ -34,4 +37,9 @@ public class UIlevelSelection : UIBase
             }
         }
     }
+    void OnBackButtonClick()
+    {
+        GoBack();
+    }
+
 }

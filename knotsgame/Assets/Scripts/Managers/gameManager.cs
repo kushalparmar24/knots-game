@@ -8,11 +8,15 @@ using UnityEngine.SceneManagement;
 public class gameManager : MonoBehaviour
 {
     static gameManager instance;
+    public const string GAMESCENE = "Game";
+    public const string MENUSCENE = "Menu";
     List<ArrayLayout> gameLevels;
     FileManager fileManager = new FileManager();
     int currentLevel;
     public int getCurrentLevel { get { return currentLevel; } }
     public static gameManager Instance { get { return instance; } }
+    public string GameScene { get { return GAMESCENE; } }
+    public string MenuScene { get { return MENUSCENE; } }
     public List<ArrayLayout> getlevelDatas()
     {
         return gameLevels;

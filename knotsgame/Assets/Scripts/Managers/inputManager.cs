@@ -24,8 +24,8 @@ public class inputManager : MonoBehaviour
             inputType = InputType.NONE;
             return;
         }
-
-         point = Camera.main.ScreenToWorldPoint(Input.mousePosition);
+#if UNITY_EDITOR || UNITY_STANDALONE
+        point = Camera.main.ScreenToWorldPoint(Input.mousePosition);
         if (Input.GetMouseButtonDown(0))
         {
             inputType = InputType.FIRSTTOUCH;
@@ -42,7 +42,8 @@ public class inputManager : MonoBehaviour
             inputType = InputType.SWIPING;
             levelManager.Instance.inputRecieved(inputType, point);
         }
-#if UNITY_ANDROID
+
+#elif UNITY_ANDROID || UNITY_IOS
         if (Input.touchCount == 1)
         {
             Touch touch = Input.GetTouch(0);
@@ -50,7 +51,7 @@ public class inputManager : MonoBehaviour
             point = Camera.main.ScreenToWorldPoint(_touchPos);
             if (touch.phase == TouchPhase.Began || touch.phase == TouchPhase.Moved)
             {
-                inputType = InputType.SWIPING;
+                inputType = InputType.FIRSTTOUCH;
                 levelManager.Instance.inputRecieved(inputType, point);
             } 
             else if (touch.phase == TouchPhase.Ended)
@@ -58,8 +59,9 @@ public class inputManager : MonoBehaviour
                 inputType = InputType.NONE;
                 levelManager.Instance.inputRecieved(inputType, point);
             }
-            if (inputType == InputType.SWIPING)
+            if (inputType == InputType.FIRSTTOUCH || inputType == InputType.SWIPING)
             {
+                inputType = InputType.SWIPING;
                 levelManager.Instance.inputRecieved(inputType, point);
             }
         }
