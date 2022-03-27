@@ -18,7 +18,7 @@ public class baseKnots
     List<nodeData> placedList = new List<nodeData>();
     Dictionary<int, List<nodeData>> removedNodes= new Dictionary<int, List<nodeData>>();
     bool firstNode;
-    Vector3Int firstNodePos = Vector3Int.one;
+    public Vector3Int firstNodePos = Vector3Int.one;
     public bool completed;
     int completionCount;
 

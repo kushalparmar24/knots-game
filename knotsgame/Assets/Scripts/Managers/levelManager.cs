@@ -59,7 +59,7 @@ public class levelManager : MonoBehaviour
     {
         gameState = GameState.LOADING;
         UIInGameManager.Instance.setLevelText();
-        levels = gameManager.Instance.getlevelDatas()[gameManager.Instance.currentLevel];
+        levels = gameManager.Instance.getlevelDatas()[gameManager.Instance.getCurrentLevel];
         levelNods = new Dictionary<int, List<Vector3Int>>();
         row = levels.rows[0].row.GetLength(0);
         col = levels.rows.GetLength(0);
@@ -136,6 +136,7 @@ public class levelManager : MonoBehaviour
         {
             if (prevPos == currentPos || currentWallTile == null)
                 return;
+            canDraw = checkIfNoBlock(canDraw, currentPos);
             checkSwipingNodes();
             checkAddOrRemove();
            // canDraw = true;
@@ -291,20 +292,15 @@ public class levelManager : MonoBehaviour
             {
                 bool horizontal = true;
                 int diff;
-                bool isPositive = false;
                 if (lastbrick.y == cell.y)
                 {
                     horizontal = true;
                     diff = cell.x - lastbrick.x;
-                    if (cell.x > lastbrick.x)
-                        isPositive = true;
                 }
                 else
                 {
                     horizontal = false;
                     diff = cell.y - lastbrick.y;
-                    if (cell.y > lastbrick.y)
-                        isPositive = true;
                 }
                 List<nextNodeData> possible = new List<nextNodeData>();
                 for (int i = 0; i < Mathf.Abs(diff); i++)
@@ -312,12 +308,12 @@ public class levelManager : MonoBehaviour
                     Vector3Int posToCheck;
                     if (horizontal)
                     {
-                        if (isPositive) posToCheck = new Vector3Int(lastbrick.x + (i + 1), lastbrick.y, 0);
+                        if (cell.x > lastbrick.x) posToCheck = new Vector3Int(lastbrick.x + (i + 1), lastbrick.y, 0);
                         else posToCheck = new Vector3Int(lastbrick.x - (i + 1), lastbrick.y, 0);
                     }
                     else
                     {
-                        if (isPositive) posToCheck = new Vector3Int(lastbrick.x, lastbrick.y + (i + 1), 0);
+                        if (cell.y > lastbrick.y) posToCheck = new Vector3Int(lastbrick.x, lastbrick.y + (i + 1), 0);
                         else posToCheck = new Vector3Int(lastbrick.x, lastbrick.y - (i + 1), 0);
                     }
 
@@ -342,10 +338,51 @@ public class levelManager : MonoBehaviour
         }
     }
 
+    bool checkIfNoBlock(bool canDraw_, Vector3Int cell_)
+    {
+        //if (currentBrickTile != null)
+        //    return canDraw_;
+        Tile bricktile = null, nodetile= null, bgtile = null;
+        Vector3Int temp;
+        temp = new Vector3Int(cell_.x + 1, cell_.y, cell_.z);
+        checkInAllLayer(temp, ref bricktile, ref  nodetile, ref  bgtile);
+        if ((nodetile == currentNode.getNodeTile() && temp == currentNode.firstNodePos) || (bricktile == currentNode.getBrickTile() && currentNode.placedListCount() > 0 && currentNode.lastPlacedPostion() == temp))
+        {
+            return true;
+        }
+        temp = new Vector3Int(cell_.x - 1, cell_.y, cell_.z);
+        checkInAllLayer(temp, ref bricktile, ref nodetile, ref bgtile);
+        if (nodetile == currentNode.getNodeTile() && temp == currentNode.firstNodePos || (bricktile == currentNode.getBrickTile() && currentNode.placedListCount() > 0 && currentNode.lastPlacedPostion() == temp))
+        {
+            return true;
+        }
+        temp = new Vector3Int(cell_.x, cell_.y-1, cell_.z);
+        checkInAllLayer(temp, ref bricktile, ref nodetile, ref bgtile);
+        if (nodetile == currentNode.getNodeTile() && temp == currentNode.firstNodePos || (bricktile == currentNode.getBrickTile() && currentNode.placedListCount() > 0 && currentNode.lastPlacedPostion() == temp))
+        {
+            return true;
+        }
+        temp = new Vector3Int(cell_.x , cell_.y +1, cell_.z);
+        checkInAllLayer(temp, ref bricktile, ref nodetile, ref bgtile);
+        if (nodetile == currentNode.getNodeTile() && temp == currentNode.firstNodePos || (bricktile == currentNode.getBrickTile() && currentNode.placedListCount() > 0 && currentNode.lastPlacedPostion() == temp))
+        {
+            return true;
+        }
+
+        return canDraw_;
+    }
+
+    void checkInAllLayer(Vector3Int cell_,ref Tile bricktile, ref Tile nodetile, ref Tile bgtile)
+    {
+        bricktile = brickTileMap.GetTile<Tile>(cell_);
+        nodetile = nodeTileMap.GetTile<Tile>(cell_);
+        bgtile = BGTileMap.GetTile<Tile>(cell_);
+    }
+
     /// <summary>
     /// reset the values, list and all the layers of maps once the level is finished.
     /// </summary>
-    void resetLevel()
+    public void resetLevel()
     {
         for (int j = 0; j < row; j++)
         {

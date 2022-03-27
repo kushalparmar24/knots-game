@@ -23,7 +23,7 @@ public class levelElement : MonoBehaviour
 
     void onLevelClick()
     {
-        gameManager.Instance.currentLevel = levelNumer;
+        gameManager.Instance.setCurrentLevel(levelNumer);
         UISceneController.Instance.ShowUIScreen("game", ScreenManager.UIScreens.INGAMEHUD);
     }
    

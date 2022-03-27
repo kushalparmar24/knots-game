@@ -13,7 +13,6 @@ public class colorNodeData : ScriptableObject
 {
     [SerializeField] List<colorIDData> colorIDDatas;
     [SerializeField] Tile BGTile, halfLineTile, angleLineTile, fullLineTile, nodeLineTile;
-    
 
     #region getters
     public List<colorIDData> colorIDDatasList()

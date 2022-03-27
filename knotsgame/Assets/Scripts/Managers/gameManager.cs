@@ -10,8 +10,17 @@ public class gameManager : MonoBehaviour
     static gameManager instance;
     List<ArrayLayout> gameLevels;
     FileManager fileManager = new FileManager();
-    public int currentLevel;
+    int currentLevel;
+    public int getCurrentLevel { get { return currentLevel; } }
     public static gameManager Instance { get { return instance; } }
+    public List<ArrayLayout> getlevelDatas()
+    {
+        return gameLevels;
+    }
+    public void setCurrentLevel(int lvl_)
+    {
+        currentLevel = lvl_;
+    }
 
     private void Awake()
     {
@@ -29,18 +38,15 @@ public class gameManager : MonoBehaviour
     {
         fetchLevels();
     }
-    public List<ArrayLayout> getlevelDatas()
-    {
-        return gameLevels;
-    }
-
+    
     /// <summary>
     /// loads all the level at start of the the game and keep is stored in the list.
     /// </summary>
     void fetchLevels()
     {
         bool DataLoaded = true;
-        currentLevel = 10;
+        gameLevels = new List<ArrayLayout>();
+        currentLevel = 0;
         
         while(DataLoaded)
         {

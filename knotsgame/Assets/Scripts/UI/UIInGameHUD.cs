@@ -22,7 +22,7 @@ public class UIInGameHUD : UIBase
 
     public void setLevelNumText()
     {
-        levelNumText.text = "Level "+(gameManager.Instance.currentLevel).ToString();
+        levelNumText.text = "Level "+(gameManager.Instance.getCurrentLevel+1).ToString();
     }
     public void setCompletedTextState(bool state_)
     {
