@@ -244,7 +244,7 @@ MonoBehaviour:
   m_UiScaleMode: 1
   m_ReferencePixelsPerUnit: 100
   m_ScaleFactor: 1
-  m_ReferenceResolution: {x: 1024, y: 768}
+  m_ReferenceResolution: {x: 768, y: 1024}
   m_ScreenMatchMode: 0
   m_MatchWidthOrHeight: 0.5
   m_PhysicalUnit: 3
@@ -612,6 +612,11 @@ PrefabInstance:
       propertyPath: m_Name
       value: LevelSelectionScreen
       objectReference: {fileID: 0}
+    - target: {fileID: 714940247753850325, guid: c68dffc860f6498419f60438223cba0a,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 0
+      objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: c68dffc860f6498419f60438223cba0a, type: 3}
 --- !u!1001 &2618716053489904009
@@ -625,6 +630,11 @@ PrefabInstance:
         type: 3}
       propertyPath: m_Name
       value: MenuScreen
+      objectReference: {fileID: 0}
+    - target: {fileID: 2618716053844443066, guid: bf85f86f97262a949b39759a0d90e426,
+        type: 3}
+      propertyPath: m_IsActive
+      value: 1
       objectReference: {fileID: 0}
     - target: {fileID: 2618716053844443069, guid: bf85f86f97262a949b39759a0d90e426,
         type: 3}

@@ -1,7 +1,8 @@
-﻿using System.Collections;
-using System.Collections.Generic;
-using UnityEngine;
+﻿using UnityEngine;
 
+/// <summary>
+/// static instance that provide the access to other UI screen in game. 
+/// </summary>
 public class UIInGameManager : MonoBehaviour
 {
     [SerializeField] UIInGameHUD inGameHUD;

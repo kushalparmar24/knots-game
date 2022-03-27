@@ -66,10 +66,10 @@ SpriteAtlas:
   - {fileID: 21300000, guid: c801b45d098192947b7951906a2004fd, type: 3}
   m_PackedSpriteNamesToIndex:
   - fullLine
-  - ankled
+  - angledLine
   - basetile
-  - bomb100
-  - nodeline
-  - straight
+  - bomb
+  - nodeLine
+  - straightLine
   m_Tag: MasterAtlas
   m_IsVariant: 0

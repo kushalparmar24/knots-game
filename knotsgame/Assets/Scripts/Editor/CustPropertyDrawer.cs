@@ -1,6 +1,5 @@
 ﻿using UnityEngine;
 using UnityEditor;
-using System.Collections;
 
 [CustomPropertyDrawer(typeof(ArrayLayout))]
 public class CustPropertyDrawer : PropertyDrawer {
